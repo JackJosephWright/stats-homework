@@ -169,7 +169,7 @@ Next, you will review how this set of code works.
 
 There are 15,000 observations in `sample_props50`. The sampling distribution looks normal. 
 
-```{r}
+```{r }
 
 
 
