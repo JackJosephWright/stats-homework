@@ -2,7 +2,9 @@
 title: "Inference for numerical data"
 author: "Jack Wright"
 date: "`r Sys.Date()`"
-output: openintro::lab_report
+output:
+  openintro::lab_report: default
+  openintro::pdf: default
 ---
 
 ```{r load-packages, message=FALSE}
