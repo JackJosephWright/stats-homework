@@ -1,0 +1,441 @@
+---
+title: "Lab7"
+author: "Jack Wright"
+date: "10/18/2020"
+output: pdf_document
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+library(infer)
+```
+
+### Exercise 1
+
+The cases are about 13583 school aged children.
+Remember that you can answer this question by viewing the data in the data viewer or
+by using the following command:
+
+```{r}
+data(yrbss)
+```
+
+### Exercise 2
+
+1.  How many observations are we missing weights from?
+
+```{r}
+summary(yrbss$weight)
+yrbss%>%
+  filter(is.na(weight))%>%
+  nrow()
+```
+
+
+1004 cases are missing weights.
+
+```{r create new var}
+yrbss <- yrbss %>% 
+  mutate(physical_3plus = ifelse(yrbss$physically_active_7d > 2, "yes", "no"))
+```
+
+### Exercise 3
+
+
+1.  Make a side-by-side boxplot of `physical_3plus` and `weight`. Is there a 
+relationship between these two variables? What did you expect and why?
+
+They look very similar. I was expecting people who were physical 3 times a week to weigh less on average but the medians look similar as well as the IQR.
+
+```{r}
+yrbss$physical_3plus<-as.factor(yrbss$physical_3plus)
+yrb_plot<-yrbss%>%
+  filter(!is.na(weight),!is.na(physical_3plus))
+p<-ggplot(yrb_plot, aes(x=physical_3plus,y=weight))+
+  geom_boxplot()
+p
+
+```
+
+
+```{r}
+yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+
+```
+
+
+### Exercise 4
+
+1.  Are all conditions necessary for inference satisfied? Comment on each. You can 
+compute the group sizes with the `summarize` command above by defining a new variable
+with the definition `n()`
+
+CONDITIONS FOR INFERENCE:
+
+Independence:
+
+it was a SRS and the two groups are not linked, necessarily one who excersizes 3 times a week plus cannot be in the group that doesn't.
+
+Size:
+
+the groups are less than 10% of the total population of kids who excersize and those who don't
+
+in the study...
+
+```{r}
+#create new variable n
+
+yrbss<- yrbss %>% 
+  mutate(n = ifelse(yrbss$physically_active_7d > 2, "yes", "no"))
+
+yrbss$n<-as.factor(yrbss$n)
+
+view(yrbss)
+yrbss%>%
+ count(n)
+
+
+
+
+```
+
+
+### Exercise 5
+
+Hypothesis test:
+
+H_0: the difference in the means between physical 3 plus and less than 3 are equal (mean1-mean2)=0
+H_A: the weights are diffferent !=0
+
+```{r}
+obs_diff <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+
+
+```{r}
+null_dist <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+```{r}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+```
+
+
+```{r}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+```
+
+
+
+### Exercise 6
+
+1.
+
+How many of these null permutations have a difference of at least obs_stat?
+
+```{r}
+obs_diff_val<-obs_diff$stat[1]
+
+null_list<-as.list(null_dist$stat)
+null_abs<-lapply(null_list, FUN=function(x){abs(x)})
+
+null_dist%>%
+  summarise(mean= mean(stat, na.rm=TRUE))
+
+null_dist%>%
+  filter(stat>obs_diff_val)
+
+```
+
+none of the values are greater than the obs_diff_val
+
+```{r}
+null_dist %>%
+  get_p_value(obs_stat = obs_diff, direction = "two_sided")
+
+```
+
+
+### Exercise 7
+
+1.
+
+Construct and record a confidence interval for the difference between the weights of those who exercise at least three times a week and those who don’t, and interpret this interval in context of the data.
+
+```{r}
+# number of groups
+n_1<-8406
+n_2<-4408
+
+x_bar_diff<-1.78
+T_score<-pt(.025,4407,lower.tail = FALSE)*2
+
+#get sigmas of samples
+sigma_1<-yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(sd = sd(weight, na.rm = TRUE))%>%
+  filter(physical_3plus=="yes")%>%
+  select(sd)%>%
+  as.double()
+sigma_2<-yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(sd = sd(weight, na.rm = TRUE))%>%
+  filter(physical_3plus=="no")%>%
+  select(sd)%>%
+  as.double()
+
+SE<-sqrt((sigma_1^2 /n_1)+(sigma_2^2/n_2))
+
+bot<-x_bar_diff-T_score*SE
+top<-x_bar_diff+T_score*SE
+
+cat("the 95% confidence interval for comparing the differnece between the means of these two independent samples is ",bot,"to",top)
+
+```
+
+
+I am not sure I fully understand the role of the null distribution that we calculated. This is a little backwards than I thought it would work but, maybe we can say, since H_0: there is NO difference bewteen the two groups falls OUTSIDE our 95% confidence interval, we can REJECT the null hypothesis. 
+
+### Exercise 8
+
+1.
+
+Calculate a 95% confidence interval for the average height in meters (height) and interpret it in context.
+
+Explore height
+```{r}
+summary(yrbss$height)
+height<-yrbss%>%
+  filter(!is.na(height))%>%
+  select(height)
+
+n<-nrow(height)
+df<-n-1
+height<-height$height
+
+
+x_bar<-mean(height)
+sigma<-sd(height)
+SE<-sigma/sqrt(n)
+t_star<-qt(.025,df=df)
+
+#confidence interval
+
+bot<-x_bar-abs(t_star*SE)
+top<-x_bar+abs(t_star*SE)
+
+cat("the 95% confidence interval is ",bot," to ",top)
+
+```
+
+
+```{r}
+t_star<-abs(qt(.05,df=df))
+# the rest is the same
+x_bar<-mean(height)
+sigma<-sd(height)
+SE<-sigma/sqrt(n)
+bot_1<-x_bar-abs(t_star*SE)
+top_1<-x_bar+abs(t_star*SE)
+
+cat("the 90% confidence interval is ",bot_1," to ",top_1)
+```
+
+The difference is so slight, could this be due to the really tight standard error due to the sample size?
+
+
+```{r}
+yrbss<-as.data.frame(yrbss)
+ggplot(yrbss, aes(x=height))+
+  geom_histogram()
+
+```
+
+Looking at the histogram. there is a huge peak at what appears to be the sample mean. This could cause the dramatic tightening of the confidence interval.
+
+
+### Exercise 10
+
+Conduct a hypothesis test evaluating whether the average height is DIFFERENT for those who exercise at least three times a week and those who dont.
+
+```{r}
+obs_diff <- yrbss %>%
+  specify(height ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+```
+
+hypothesis test:
+
+H_0: the difference in the height for the two groups is zero 
+
+(mean_diff=0)
+
+H_A: the difference in heights is NOT zero 
+
+(mean_diff!=0)
+
+```{r}
+#physically active count
+n_1<-yrbss%>%
+  filter(physical_3plus=="yes")%>%
+  nrow()
+n_2<-yrbss%>%
+  filter(physical_3plus=="no")%>%
+  nrow()
+#difference in mean height
+obs_diff <- yrbss %>%
+  specify(height ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+null<-0
+#sd for physically active
+sigma_1<-yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(sd = sd(height, na.rm = TRUE))%>%
+  filter(physical_3plus=="yes")%>%
+  select(sd)%>%
+  as.double()
+#sd for not physically active
+sigma_2<-yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(sd = sd(height, na.rm = TRUE))%>%
+  filter(physical_3plus=="no")%>%
+  select(sd)%>%
+  as.double()
+#standard error
+SE<-sqrt((sigma_1^2 /n_1)+(sigma_2^2/n_2))
+T_score<-abs(qt(.025,4407))
+
+bot<-x_bar_diff-T_score*SE
+top<-x_bar_diff+T_score*SE
+
+cat("the 95% confidence interval for the difference in mean height between physically active and non physically active is ",bot,"to",top)
+
+```
+
+The null value falls outside this range so we can REJECT the null hypothesis that there is no difference in the mean height between physically active and non physically active subjects.
+
+### Exercise 11
+
+1.
+
+Now, a non-inference task: Determine the number of different options there are in the dataset for the hours_tv_per_school_day there are.
+
+```{r}
+yrbss%>%
+  filter(!is.na(hours_tv_per_school_day))%>%
+  select(hours_tv_per_school_day)%>%
+  unique()
+```
+
+
+
+### Exercise 12
+
+1.
+
+Come up with a research question evaluating the relationship between height or weight and sleep. Formulate the question in a way that it can be answered using a hypothesis test and/or a confidence interval. Report the statistical results, and also provide an explanation in plain language. Be sure to check all assumptions, state your α level, and conclude in context.
+
+
+Exploring data:
+
+```{r}
+
+yrbss$hours_tv_per_school_day<-as.factor(yrbss$hours_tv_per_school_day)
+yrb_plot<-yrbss%>%
+  filter(!is.na(weight),!is.na(hours_tv_per_school_day))
+p<-ggplot(yrb_plot, aes(x=hours_tv_per_school_day,y=weight))+
+  geom_boxplot()
+p
+```
+
+
+looking at the box plots, it looks like there is no major difference between weight and how much TV one watches. 
+
+I would like to do an ANOVA test on this data:
+
+CHECKS:
+
+Normality:
+
+the sample sizes are large enough that the skew can be overlooked.
+
+Homogeneity of variance:
+
+the IQR for the categories looks similar across groups. 
+
+```{r}
+library(psych)
+desc<-describeBy(yrbss$weight,yrbss$hours_tv_per_school_day,mat=TRUE)
+
+print(desc,row.names=FALSE)
+```
+
+
+perform ANOVA test:
+
+```{r}
+aov.out<-aov(weight ~ hours_tv_per_school_day, data=yrbss)
+
+summary(aov.out)
+
+```
+
+
+The p-value is very small so it looks like there is some effect, but we cannot yet say which group.
+
+My guess would be that the high mean weight of the 7+ hours of tv group is the culprit. 
+
+NEXT STEPS:
+
+we want to do a t test of each pair, with a Bonferroni adjustment to the alpha.
+
+I will look at the difference in mean between the 5+ group and the 3 hour group (in the middle of the hours watched.)
+```{r}
+#T_score<-(x_bar_middle-x_bar_lower) - null / SE (for comparisons)
+n_five<-1430
+n_three<-1995
+x_bar_five<-70.20328
+x_bar_three<-67.78624	
+#from the residuals
+MSE<-284
+null<-0
+SE<-sqrt((MSE/n_five)+(MSE/n_three))
+T_score<-((x_bar_five-x_bar_three)-null)/SE
+df=12301
+k<-7
+K<-(k*(k-1))/2
+a<-.05
+(a_star<-a/K)
+```
+
+
+use R to get the area under the curve of the t-distribution
+
+```{r}
+p_value<-2*pt(T_score,df=df,lower.tail = FALSE)
+```
+
+
+recall we are using the MODIFIED significance level a*
+
+```{r}
+print(a_star)
+print(p_value)
+```
+
+
+since the p-value is LOWER than the a_star, we can reject the null hypothesis, and say that the difference between the means of 5+ hours of tv and 3 is statistically significant. 
