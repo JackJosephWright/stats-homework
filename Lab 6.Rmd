@@ -193,9 +193,7 @@ library(openintro)
 library(infer)
 ```
 
-### Creating a reproducible lab report
 
-To create your new lab report, in RStudio, go to New File -> R Markdown... Then, choose From Template and then choose `Lab Report for OpenIntro Statistics Labs` from the list of templates.
 
 ### The data
 
@@ -230,35 +228,6 @@ cat("the proportion of people who do not wear helmets who have texted in the las
 ```
 
 
-Remember that you can use `filter` to limit the dataset to just non-helmet
-wearers. Here, we will name the dataset `no_helmet`.
-
-```{r no helmet}
-no_helmet <- yrbss %>%
-  filter(helmet_12m == "never")
-```
-
-Also, it may be easier to calculate the proportion if you create a new variable
-that specifies whether the individual has texted every day while driving over the 
-past 30 days or not. We will call this variable `text_ind`.
-
-```{r indicator-texting}
-no_helmet <- no_helmet %>%
-  mutate(text_ind = ifelse(text_while_driving_30d == "30", "yes", "no"))
-```
-
-## Inference on proportions
-
-When summarizing the YRBSS, the Centers for Disease Control and Prevention seeks 
-insight into the population *parameters*. To do this, you can answer the question,
-"What proportion of people in your sample reported that they have texted while 
-driving each day for the past 30 days?" with a statistic; while the question 
-"What proportion of people on earth have texted while driving each day for the 
-past 30 days?" is answered with an estimate of the parameter.
-
-The inferential tools for estimating population proportion are analogous to 
-those used for means in the last chapter: the confidence interval and the 
-hypothesis test.
 
 ```{r nohelmet-text-ci}
 no_helmet %>%
@@ -269,12 +238,6 @@ no_helmet %>%
 
 ```
 
-Note that since the goal is to construct an interval estimate for a 
-proportion, it's necessary to both include the `success` argument within `specify`,
-which accounts for the proportion of non-helmet wearers than have consistently texted
-while driving the past 30 days, in this example, and that `stat` within `calculate`
-is here "prop", signaling that you are trying to do some sort of inference on a 
-proportion.
 
 
 1.  What is the margin of error for the estimate of the proportion of non-helmet 
