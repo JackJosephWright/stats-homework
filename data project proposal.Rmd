@@ -29,7 +29,7 @@ library(tidyverse)
 ```{r}
 # load data from fivethirtyeight
 
-url<-"https://projects.fivethirtyeight.com/nfl-api/nfl_elo_latest.csv"
+url<-"https://projects.fivethirtyeight.com/nfl-api/nfl_elo.csv"
 
 dat<-read.csv(url)
 
@@ -105,5 +105,41 @@ geom_point()+
 ```{r}
 m1<-lm(score_diff~ elo_diff, data=dat)
 summary(m1)
+```
+
+
+The trend is small, but the p-value is below .05 so we can conclude that the difference in elo is corrolated to the difference in final score.  
+
+The R^2 of .07 tells us that only 7% of the variance in the score is accounted for by elo. This leads us to believe that, while the elo is corrolary, the metric is not accounting for all of the complexity of the game. 
+
+
+## Residuals
+
+```{r}
+ggplot(data = m1, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  xlab("Fitted values") +
+  ylab("Residuals")
+
+```
+
+There is no trend in the residual data, which leads me to believe the dataset is normal.
+
+
+```{r}
+ggplot(data = m1, aes(x = .resid)) +
+  geom_histogram(binwidth = 1) +
+  xlab("Residuals")
+```
+The residuals are normal around zero.
+
+
+
+QQ plot
+
+```{r}
+ggplot(data = m1, aes(sample = .resid)) +
+  stat_qq()
 ```
 
