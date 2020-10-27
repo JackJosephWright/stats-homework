@@ -1,0 +1,109 @@
+---
+title: "Jack Wright Project Proposal"
+author: "Jack Wright"
+date: "10/26/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Libraries
+```{r}
+library(tidyverse)
+```
+
+
+
+
+
+
+
+
+## Data preparation
+
+```{r}
+# load data from fivethirtyeight
+
+url<-"https://projects.fivethirtyeight.com/nfl-api/nfl_elo_latest.csv"
+
+dat<-read.csv(url)
+
+# i will subset the columns that I need for the analysis
+
+dat<-dat%>%
+  select(elo1_pre,elo2_pre,score1,score2)
+
+#add the elo difference column
+
+dat<-dat%>%
+  mutate(elo_diff=elo1_pre-elo2_pre)
+
+## add score difference column (if the elo_diff is positive, then score1-score2, if negative score2-score1)
+
+dat<-dat%>%
+  mutate(score_diff=
+           ifelse(elo_diff>=0,score1-score2,score2-score1)
+    
+    )
+
+#now i can take the absolute value of the elo_difference
+
+dat$elo_diff<-abs(dat$elo_diff)
+
+```
+
+
+## Research Question
+
+I want to look at the NFL elo data from 2019 and find out if the difference in elo (a rating system adopted from chess) and the difference in final score are corrolated.
+
+
+## Cases and collection
+
+there are 269 cases, each is a game played during the 2019 season in the NFL. 
+
+I am pulling this information in from "fivethirtyeight," so I will be relying on their elo calculations. 
+
+link:
+
+[fivethirtyeight elo](https://projects.fivethirtyeight.com/nfl-api/nfl_elo_latest.csv)
+
+## Type of study
+
+this is an observational study
+
+
+## Data source
+
+This data is collected and the elo rank is created by fivethirtyeight.com, and is available at the above link
+
+
+
+## Response
+
+The response variable will be a numerical difference in score at the end of the game. 
+
+## Explanatory
+
+The explanatory variable will be the numerical difference in elo before the game was played. 
+
+## Relevant summary statistics
+
+The summary statistics will be correlation coeficient and the R^2 of the data.
+
+```{r}
+ggplot(data=dat, aes(x=elo_diff, y=score_diff))+
+geom_point()+
+  stat_smooth(method = "lm", se=FALSE)
+```
+
+```{r}
+m1<-lm(score_diff~ elo_diff, data=dat)
+summary(m1)
+```
+
