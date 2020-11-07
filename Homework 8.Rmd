@@ -22,8 +22,7 @@ m_carb_cals <- lm(carb ~ calories, data = starbucks)
 par(mar = c(3.5, 4, 1, 0.5), las = 1, mgp = c(2.5, 0.7, 0), 
     cex.lab = 1.5, cex.axis = 1.5)
 plot(carb ~ calories, data = starbucks, 
-     pch = 19, col = COL[1,2], 
-     xlab = "Calories", ylab = "Carbs (grams)", axes = FALSE)+
+     pch = 19, col = COL[1,2],   xlab = "Calories", ylab = "Carbs (grams)", axes = FALSE)+
 axis(1)+
 axis(2, at = seq(20, 80, 20))+
 box()+
@@ -44,12 +43,12 @@ abline(h = 0, lty = 2)
 par(mar = c(3.5, 2.5, 0.5, 0.5), las = 1, mgp = c(2.5, 0.7, 0), 
     cex.lab = 1.5, cex.axis = 1.5)
 
-hist(m_carb_cals$residuals,
-     col = COL[1], 
-     xlab = "Residuals", ylab = "", main = "", 
-     axes = FALSE, xlim = c(-40,40))+
-axis(1, at = seq(-40, 40, 20))+
-axis(2)
+#hist(m_carb_cals$residuals,
+ #    col = COL[1], 
+ #    xlab = "Residuals", ylab = "", main = "", 
+ #    axes = FALSE, xlim = c(-40,40))+
+#axis(1, at = seq(-40, 40, 20))+
+#axis(2)
 ```
 
 (a) Describe the relationship between number of calories and amount of carbohydrates (in grams) that Starbucks food menu items contain.
@@ -194,19 +193,7 @@ No, because the shoulder girth is outside of the scope of our data.
 
 \begin{center}
 {
-\begin{tabular}{rrrrr}
-    \hline
-            & Estimate  & Std. Error    & t value   & Pr($>$$|$t$|$) \\ 
-    \hline
-(Intercept) & -0.357    & 0.692         & -0.515    & 0.607 \\ 
-body wt     & 4.034     & 0.250         & 16.119    & 0.000 \\ 
-    \hline
-\end{tabular} \ \\
-$s = 1.452 \qquad R^2 = 64.66\% \qquad R^2_{adj} = 64.41\%$ 
-}
-\end{center}
 
-\begin{center}
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%", fig.height=4}
 # load packages -----------------------------------------------------
 library(openintro)
@@ -267,16 +254,7 @@ cat("the correlation coefficient is the square root of r^2, or ",cor)
 
 **Rate my professor.** (8.44, p. 340) Many college courses conclude by giving students the opportunity to evaluate the course and the instructor anonymously. However, the use of these student evaluations as an indicator of course quality and teaching effectiveness is often criticized because these measures may reflect the influence of non-teaching related characteristics, such as the physical appearance of the instructor. Researchers at University of Texas, Austin collected data on teaching evaluation score (higher score means better) and standardized beauty score (a score of 0 means average, negative score means below average, and a positive score means above average) for a sample of 463 professors. The scatterplot below shows the relationship between these variables, and also provided is a regression output for predicting teaching evaluation score from beauty score.
 
-\begin{center}
-\begin{tabular}{rrrrr}
-    \hline
-            & Estimate  & Std. Error    & t value   & Pr($>$$|$t$|$) \\ 
-  \hline
-(Intercept) & 4.010     & 0.0255        & 	157.21  & 0.0000 \\ 
-beauty      &  \fbox{\textcolor{white}{{ Cell 1}}}  
-                        & 0.0322        & 4.13      & 0.0000\vspace{0.8mm} \\ 
-   \hline
-\end{tabular}
+
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%", fig.height=4}
@@ -307,7 +285,7 @@ box()
 I have the y intercept and the mean of y, so I know the delta of y over that interval. I also know that the y intercept is defined as the value of y when x=0, so i know the x values over that same interval, so I can calculate the slope
 ```{r}
 m<-(4.010-3.9983)/(0--.0883)
-cat("the slope is ",round(m,2)
+cat("the slope is ",round(m,2))
 ```
 
 (b) Do these data provide convincing evidence that the slope of the relationship between teaching evaluation and beauty is positive? Explain your reasoning.
